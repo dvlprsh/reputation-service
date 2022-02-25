@@ -4,21 +4,22 @@ import { providers } from "ethers"
 import QRCode from "qrcode.react"
 import React, { useEffect, useState } from "react"
 
+const NODE_URL = "http:%2f%2fnode.brightid.org"
+const CONTEXT = "interrep"
+
 export default function BrightIdPage(): JSX.Element {
     const { account } = useWeb3React<providers.Web3Provider>()
-    const [ url, setUrl ] = useState<string>()
-    
+    const [url, setUrl] = useState<string>()
+
     useEffect(() => {
         ;(async () => {
-            if (account ) {
-                const NODE_URL = "http:%2f%2fnode.brightid.org"
-                const CONTEXT = "interrep"
+            if (account) {
                 const verificationLink = `brightid://link-verification/${NODE_URL}/${CONTEXT}/${account}`
-                
+
                 setUrl(verificationLink)
             }
         })()
-    },[account])
+    }, [account])
     return (
         <>
             <Container flex="1" mb="80px" mt="180px" px="80px" maxW="container.lg">
@@ -27,11 +28,7 @@ export default function BrightIdPage(): JSX.Element {
                         Connect with BrightId
                     </Heading>
                     <Box mt="50px" mb="50px">
-                        {url === undefined ? (
-                            <Text fontWeight="semibold">Please connect your wallet</Text>
-                        ) : (
-                            <QRCode value={url} />
-                        )}
+                        {url ? <QRCode value={url} /> : <Text fontWeight="semibold">Please connect your wallet</Text>}
                     </Box>
                 </Box>
             </Container>
