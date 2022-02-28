@@ -5,7 +5,7 @@ import QRCode from "qrcode.react"
 import React, { useEffect, useState } from "react"
 
 const NODE_URL = "http:%2f%2fnode.brightid.org"
-const CONTEXT = "interrep"
+const CONTEXT = "interep"
 
 export default function BrightIdPage(): JSX.Element {
     const { account } = useWeb3React<providers.Web3Provider>()
