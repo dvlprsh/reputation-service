@@ -4,12 +4,13 @@ import { Container, Link, Icon, Text, HStack, Box, useColorMode } from "@chakra-
 
 export default function Footer(): JSX.Element {
     const { colorMode } = useColorMode()
+    const year = new Date().getFullYear()
 
     return (
         <Box bg={colorMode === "light" ? "gray.200" : "background.800"} w="100%">
             <Container my="15px" px="80px" maxW="container.xl">
                 <HStack justify="space-between">
-                    <Text>Copyright © 2021 Interep</Text>
+                    <Text>Copyright © {year} Interep</Text>
 
                     <HStack spacing={4}>
                         <Link fontWeight="bold" href="https://docs.interep.link" isExternal>
