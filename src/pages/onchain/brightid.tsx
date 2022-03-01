@@ -4,8 +4,8 @@ import { providers, Signer } from "ethers"
 import QRCode from "qrcode.react"
 import React, { useCallback, useEffect, useState } from "react"
 import Step from "src/components/Step"
-import useGroups from "src/hooks/useGroups"
 import { Group } from "src/types/groups"
+import useOnChainGroups from "src/hooks/useOnChainGroups"
 import { OnchainGroups } from "src/core/onchain"
 
 const NODE_URL = "http:%2f%2fnode.brightid.org"
@@ -26,9 +26,8 @@ export default function BrightIdPage(): JSX.Element {
         hasIdentityCommitment,
         joinGroup,
         leaveGroup,
-        getGroup,
         _loading
-    } = useGroups()
+    } = useOnChainGroups()
 
     const getQRcodeLink = async (ethereumAddress: string) => {
         const verificationLink = `brightid://link-verification/${NODE_URL}/${CONTEXT}/${ethereumAddress}`
@@ -38,13 +37,10 @@ export default function BrightIdPage(): JSX.Element {
         const response = await fetch(`https://app.brightid.org/node/v5/verifications/${CONTEXT}/${ethereumAddress}`)
         return response.json()
     }
-    const isUserVerified = useCallback(
-        async (address: string) => {
-         const brightIdUser = await getBrightIdByAddress(address)
-         return brightIdUser.data.unique
-        },
-        []
-     )
+    const isUserVerified = useCallback(async (address: string) => {
+        const brightIdUser = await getBrightIdByAddress(address)
+        return brightIdUser.data.unique
+    }, [])
 
     useEffect(() => {
         ;(async () => {
@@ -63,11 +59,11 @@ export default function BrightIdPage(): JSX.Element {
     const step1 = useCallback(
         async (signer: Signer, group: Group, groupName: OnchainGroups) => {
             const identityComitment = await retrieveIdentityCommitment(signer, "onchain")
-            const onchainGroup = await getGroup("onchain", groupName)
+            // const onchainGroup = await getGroup("onchain", groupName)
 
-            if (identityComitment && onchainGroup) {
+            if (identityComitment) {
                 const hasJoined = await hasIdentityCommitment(identityComitment, "onchain", group.name)
-                setGroup(onchainGroup)
+                // setGroup(onchainGroup)
 
                 if (hasJoined === null) {
                     return
@@ -77,7 +73,7 @@ export default function BrightIdPage(): JSX.Element {
                 setHasJoined(hasJoined)
             }
         },
-        [retrieveIdentityCommitment, hasIdentityCommitment, getGroup]
+        [retrieveIdentityCommitment, hasIdentityCommitment]
     )
 
     const step2 = useCallback(
