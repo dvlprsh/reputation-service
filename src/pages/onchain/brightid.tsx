@@ -23,9 +23,8 @@ export default function BrightIdPage(): JSX.Element {
     const {
         signMessage,
         retrieveIdentityCommitment,
-        hasIdentityCommitment,
         joinGroup,
-        leaveGroup,
+        //leaveGroup,
         _loading
     } = useOnChainGroups()
 
@@ -62,18 +61,13 @@ export default function BrightIdPage(): JSX.Element {
             // const onchainGroup = await getGroup("onchain", groupName)
 
             if (identityComitment) {
-                const hasJoined = await hasIdentityCommitment(identityComitment, "onchain", group.name)
                 // setGroup(onchainGroup)
 
-                if (hasJoined === null) {
-                    return
-                }
                 setIdentityCommitment(identityComitment)
                 setCurrentStep(2)
-                setHasJoined(hasJoined)
             }
         },
-        [retrieveIdentityCommitment, hasIdentityCommitment]
+        [retrieveIdentityCommitment]
     )
 
     const step2 = useCallback(
@@ -99,7 +93,7 @@ export default function BrightIdPage(): JSX.Element {
                 }
             }
         },
-        [joinGroup, leaveGroup, signMessage]
+        [joinGroup, /*leaveGroup,*/ signMessage]
     )
 
     return (
