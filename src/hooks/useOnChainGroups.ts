@@ -1,39 +1,107 @@
 import { useCallback, useState } from "react"
-import { OAuthProvider } from "next-auth/providers"
-import { Signer } from "ethers"
-import { Provider } from "src/types/groups"
+import { Signer, utils, Contract, providers, Wallet } from "ethers"
+import createIdentity from "@interep/identity"
+import { useToast } from "@chakra-ui/react"
+import Interep from "contract-artifacts/Interep.json"
+
+const ADMIN = process.env.BRIGHTID_GROUP_ADMIN_MNEMONIC!
+
+const contract = new Contract("0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A", Interep.abi)
+const provider = new providers.JsonRpcProvider("https://ropsten.infura.io/v3/4cdff1dcd508417a912e1713d3750f24")
+const adminWallet = Wallet.fromMnemonic(ADMIN).connect(provider)
+
+const groupId = "1" //utils.formatBytes32String("brightid")
 
 type ReturnParameters = {
-    hasJoinedAGroup: (provider: OAuthProvider) => Promise<boolean | null>
     signMessage: (signer: Signer, message: string) => Promise<string | null>
-    retrieveIdentityCommitment: (signer: Signer, provider: Provider) => Promise<string | null>
-    hasIdentityCommitment: (
-        identityCommitment: string,
-        provider: Provider,
-        groupName: string,
-        join?: boolean
-    ) => Promise<boolean | null>
-    joinGroup: (identityCommitment: string, provider: Provider, groupName: string, body: any) => Promise<true | null>
-    leaveGroup: (identityCommitment: string, provider: Provider, groupName: string, body: any) => Promise<true | null>
+    retrieveIdentityCommitment: (signer: Signer, groupid: string) => Promise<string | null>
+    joinGroup: (identityCommitment: string, groupName: string, body: any) => Promise<true | null>
+    //leaveGroup: (identityCommitment: string, groupName: string, body: any) => Promise<true | null>
     _loading: boolean
 }
 
 export default function useOnChainGroups(): ReturnParameters {
     const [_loading, setLoading] = useState<boolean>(false)
 
-    const retrieveIdentityCommitment = useCallback(() => {}, [])
+    const toast = useToast()
 
-    const signMessage = useCallback(() => {}, [])
+    const signMessage = useCallback(
+        async (signer: Signer, message: string): Promise<string | null> => {
+            try {
+                setLoading(true)
 
-    const joinGroup = useCallback(() => {}, [])
+                const signedMessage = await signer.signMessage(message)
 
-    const leaveGroup = useCallback(() => {}, [])
+                setLoading(false)
+                return signedMessage
+            } catch (error) {
+                console.error(error)
+
+                toast({
+                    description: "Your signature is needed to create the identity commitment.",
+                    variant: "subtle",
+                    isClosable: true
+                })
+
+                setLoading(false)
+                return null
+            }
+        },
+        [toast]
+    )
+
+    const retrieveIdentityCommitment = useCallback(
+        async (signer: Signer, groupid: string): Promise<string | null> => {
+            try {
+                setLoading(true)
+
+                const identity = await createIdentity((message) => signer.signMessage(message), groupId)
+                const identityCommitment = identity.genIdentityCommitment()
+
+                setLoading(false)
+                return identityCommitment.toString()
+            } catch (error) {
+                console.error(error)
+
+                toast({
+                    description: "Your signature is needed to create the identity commitment.",
+                    variant: "subtle",
+                    isClosable: true
+                })
+
+                setLoading(false)
+                return null
+            }
+        },
+        [toast]
+    )
+
+
+    const joinGroup = useCallback(
+        async (identityCommitment: string, groupid: string, body: any): Promise<true | null> => {
+            setLoading(true)
+
+            await contract.connect(adminWallet).addMember(groupId, identityCommitment)
+            
+            
+            setLoading(false)
+            toast({
+                description: `You joined the ${groupId} group correctly.`,
+                variant: "subtle",
+                isClosable: true
+            })
+            return true
+        },
+        [toast]
+    )
+
+    //const leaveGroup = useCallback(() => {}, [])
 
     return {
         retrieveIdentityCommitment,
         signMessage,
         joinGroup,
-        leaveGroup,
+        //leaveGroup,
         _loading
     }
 }
