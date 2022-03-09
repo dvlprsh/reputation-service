@@ -26,7 +26,7 @@ export default function BrightIdPage(): JSX.Element {
         // leaveGroup,
         _loading
     } = useOnChainGroups()
-    
+
     const getQRcodeLink = async (ethereumAddress: string) => {
         const verificationLink = `brightid://link-verification/${NODE_URL}/${CONTEXT}/${ethereumAddress}`
         setUrl(verificationLink)
@@ -37,9 +37,9 @@ export default function BrightIdPage(): JSX.Element {
     }
     const isUserVerified = useCallback(async (address: string) => {
         const brightIdUser = await getBrightIdByAddress(address)
-        return brightIdUser.data.unique
+        return brightIdUser.data?.unique
     }, [])
-    
+
     useEffect(() => {
         ;(async () => {
             if (account && library) {
@@ -54,11 +54,10 @@ export default function BrightIdPage(): JSX.Element {
         })()
     }, [account, library, _currentStep, isUserVerified])
 
-
     const step1 = useCallback(
         async (signer: Signer) => {
             const identityCommitment = await retrieveIdentityCommitment(signer)
-            
+
             if (identityCommitment) {
                 setIdentityCommitment(identityCommitment)
                 setCurrentStep(2)
@@ -73,9 +72,7 @@ export default function BrightIdPage(): JSX.Element {
 
             if (userSignature) {
                 if (!hasJoined) {
-                    if (
-                        await joinGroup(identityCommitment)
-                    ) {
+                    if (await joinGroup(identityCommitment)) {
                         setCurrentStep(1)
                         setHasJoined(undefined)
                         setGroup(undefined)
@@ -92,11 +89,7 @@ export default function BrightIdPage(): JSX.Element {
 
     return (
         <Container flex="1" mb="80px" mt="180px" px="80px" maxW="container.md">
-            {_currentStep === 0 ? (
-                <VStack h="300px" align="center" justify="center">
-                    <Spinner thickness="4px" speed="0.65s" size="xl" />
-                </VStack>
-            ) : !_verified ? (
+            {!_verified ? (
                 <VStack h="250px" align="center" justify="center">
                     <Box
                         bg="white"
