@@ -10,13 +10,13 @@ const contract = new Contract("0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A", Inte
 const provider = new providers.JsonRpcProvider("https://ropsten.infura.io/v3/4cdff1dcd508417a912e1713d3750f24")
 const adminWallet = Wallet.fromMnemonic(ADMIN).connect(provider)
 
-const groupId = "1" //utils.formatBytes32String("brightid")
+const groupId = utils.formatBytes32String("brightid")
 
 type ReturnParameters = {
     signMessage: (signer: Signer, message: string) => Promise<string | null>
-    retrieveIdentityCommitment: (signer: Signer, groupid: string) => Promise<string | null>
-    joinGroup: (identityCommitment: string, groupName: string, body: any) => Promise<true | null>
-    //leaveGroup: (identityCommitment: string, groupName: string, body: any) => Promise<true | null>
+    retrieveIdentityCommitment: (signer: Signer) => Promise<string | null>
+    joinGroup: (identityCommitment: string) => Promise<true | null>
+    // leaveGroup: (identityCommitment: string, groupName: string, body: any) => Promise<true | null>
     _loading: boolean
 }
 
@@ -51,7 +51,7 @@ export default function useOnChainGroups(): ReturnParameters {
     )
 
     const retrieveIdentityCommitment = useCallback(
-        async (signer: Signer, groupid: string): Promise<string | null> => {
+        async (signer: Signer): Promise<string | null> => {
             try {
                 setLoading(true)
 
@@ -64,7 +64,7 @@ export default function useOnChainGroups(): ReturnParameters {
                 console.error(error)
 
                 toast({
-                    description: "Your signature is needed to create the identity commitment.",
+                    description: "Signature required for identity commitment.",
                     variant: "subtle",
                     isClosable: true
                 })
@@ -78,7 +78,7 @@ export default function useOnChainGroups(): ReturnParameters {
 
 
     const joinGroup = useCallback(
-        async (identityCommitment: string, groupid: string, body: any): Promise<true | null> => {
+        async (identityCommitment: string): Promise<true | null> => {
             setLoading(true)
 
             await contract.connect(adminWallet).addMember(groupId, identityCommitment)
@@ -95,13 +95,14 @@ export default function useOnChainGroups(): ReturnParameters {
         [toast]
     )
 
-    //const leaveGroup = useCallback(() => {}, [])
+
+    // const leaveGroup = useCallback(() => {}, [])
 
     return {
         retrieveIdentityCommitment,
         signMessage,
         joinGroup,
-        //leaveGroup,
+        // leaveGroup,
         _loading
     }
 }

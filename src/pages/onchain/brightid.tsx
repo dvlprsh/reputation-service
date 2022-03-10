@@ -6,7 +6,6 @@ import React, { useCallback, useEffect, useState } from "react"
 import Step from "src/components/Step"
 import { Group } from "src/types/groups"
 import useOnChainGroups from "src/hooks/useOnChainGroups"
-import { OnchainGroups } from "src/core/onchain"
 
 const NODE_URL = "http:%2f%2fnode.brightid.org"
 const CONTEXT = "interep"
@@ -24,7 +23,7 @@ export default function BrightIdPage(): JSX.Element {
         signMessage,
         retrieveIdentityCommitment,
         joinGroup,
-        //leaveGroup,
+        // leaveGroup,
         _loading
     } = useOnChainGroups()
 
@@ -38,7 +37,7 @@ export default function BrightIdPage(): JSX.Element {
     }
     const isUserVerified = useCallback(async (address: string) => {
         const brightIdUser = await getBrightIdByAddress(address)
-        return brightIdUser.data.unique
+        return brightIdUser.data?.unique
     }, [])
 
     useEffect(() => {
@@ -56,14 +55,11 @@ export default function BrightIdPage(): JSX.Element {
     }, [account, library, _currentStep, isUserVerified])
 
     const step1 = useCallback(
-        async (signer: Signer, group: Group, groupName: OnchainGroups) => {
-            const identityComitment = await retrieveIdentityCommitment(signer, "onchain")
-            // const onchainGroup = await getGroup("onchain", groupName)
+        async (signer: Signer) => {
+            const identityCommitment = await retrieveIdentityCommitment(signer)
 
-            if (identityComitment) {
-                // setGroup(onchainGroup)
-
-                setIdentityCommitment(identityComitment)
+            if (identityCommitment) {
+                setIdentityCommitment(identityCommitment)
                 setCurrentStep(2)
             }
         },
@@ -71,38 +67,30 @@ export default function BrightIdPage(): JSX.Element {
     )
 
     const step2 = useCallback(
-        async (signer: Signer, userAddress: string, group: Group, identityComitment: string, hasJoined: boolean) => {
-            const userSignature = await signMessage(signer, identityComitment)
+        async (signer: Signer, userAddress: string, group: Group, identityCommitment: string, hasJoined: boolean) => {
+            const userSignature = await signMessage(signer, identityCommitment)
 
             if (userSignature) {
                 if (!hasJoined) {
-                    if (
-                        await joinGroup(identityComitment, "onchain", group.name, {
-                            userAddress,
-                            userSignature
-                        })
-                    ) {
+                    if (await joinGroup(identityCommitment)) {
                         setCurrentStep(1)
                         setHasJoined(undefined)
                         setGroup(undefined)
                     }
-                } else if (await leaveGroup(identityComitment, "onchain", group.name, { userAddress, userSignature })) {
+                } else {
                     setCurrentStep(1)
                     setHasJoined(undefined)
                     setGroup(undefined)
                 }
             }
         },
-        [joinGroup, /*leaveGroup,*/ signMessage]
+
+        [joinGroup, /* leaveGroup, */ signMessage]
     )
 
     return (
         <Container flex="1" mb="80px" mt="180px" px="80px" maxW="container.md">
-            {_currentStep === 0 ? (
-                <VStack h="300px" align="center" justify="center">
-                    <Spinner thickness="4px" speed="0.65s" size="xl" />
-                </VStack>
-            ) : !_verified ? (
+            {!_verified ? (
                 <VStack h="250px" align="center" justify="center">
                     <Box
                         bg="white"
@@ -138,7 +126,7 @@ export default function BrightIdPage(): JSX.Element {
                             title="Step 1"
                             message="Generate your Semaphore identity."
                             actionText="Generate Identity"
-                            actionFunction={(groupName) => step1(_signer as Signer, _group as Group, groupName)}
+                            actionFunction={() => step1(_signer as Signer)}
                             loading={_currentStep === 1 && _loading}
                             disabled={_currentStep !== 1}
                         />
