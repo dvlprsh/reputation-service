@@ -3,8 +3,9 @@ import { Signer, utils, Contract, providers, Wallet } from "ethers"
 import createIdentity from "@interep/identity"
 import { useToast } from "@chakra-ui/react"
 import Interep from "contract-artifacts/Interep.json"
+import getNextConfig from "next/config"
 
-const ADMIN = process.env.BRIGHTID_GROUP_ADMIN_MNEMONIC!
+const ADMIN = getNextConfig().publicRuntimeConfig.adminMnemonic
 
 const contract = new Contract("0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A", Interep.abi)
 const provider = new providers.JsonRpcProvider("https://ropsten.infura.io/v3/4cdff1dcd508417a912e1713d3750f24")

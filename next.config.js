@@ -31,7 +31,8 @@ const securityHeaders = [
 const moduleExports = {
     publicRuntimeConfig: {
         // Will be available on both server and client
-        defaultNetwork: process.env.DEFAULT_NETWORK
+        defaultNetwork: process.env.DEFAULT_NETWORK,
+        adminMnemonic: process.env.BRIGHTID_GROUP_ADMIN_MNEMONIC
     },
     poweredByHeader: false,
     eslint: {
