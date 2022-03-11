@@ -61,6 +61,7 @@ export default function BrightIdPage(): JSX.Element {
             if (identityCommitment) {
                 setIdentityCommitment(identityCommitment)
                 setCurrentStep(2)
+                setHasJoined(false)
             }
         },
         [retrieveIdentityCommitment]

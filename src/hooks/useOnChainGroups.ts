@@ -11,7 +11,7 @@ const contract = new Contract("0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A", Inte
 const provider = new providers.JsonRpcProvider("https://ropsten.infura.io/v3/4cdff1dcd508417a912e1713d3750f24")
 const adminWallet = Wallet.fromMnemonic(ADMIN).connect(provider)
 
-const groupId = utils.formatBytes32String("brightid")
+const groupId = "1" // utils.formatBytes32String("brightid")
 
 type ReturnParameters = {
     signMessage: (signer: Signer, message: string) => Promise<string | null>
@@ -39,7 +39,7 @@ export default function useOnChainGroups(): ReturnParameters {
                 console.error(error)
 
                 toast({
-                    description: "Your signature is needed to create the identity commitment.",
+                    description: "Your signature is needed to join/leave the group.",
                     variant: "subtle",
                     isClosable: true
                 })
@@ -65,7 +65,7 @@ export default function useOnChainGroups(): ReturnParameters {
                 console.error(error)
 
                 toast({
-                    description: "Signature required for identity commitment.",
+                    description: "Your signature is needed to create the identity commitment.",
                     variant: "subtle",
                     isClosable: true
                 })
@@ -82,7 +82,7 @@ export default function useOnChainGroups(): ReturnParameters {
         async (identityCommitment: string): Promise<true | null> => {
             setLoading(true)
 
-            await contract.connect(adminWallet).addMember(groupId, identityCommitment)
+            await contract.connect(adminWallet).addMember(groupId, identityCommitment, {gasLimit: 3000000})
             
             
             setLoading(false)
