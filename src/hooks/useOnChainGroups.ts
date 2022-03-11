@@ -5,13 +5,13 @@ import { useToast } from "@chakra-ui/react"
 import Interep from "contract-artifacts/Interep.json"
 import getNextConfig from "next/config"
 
-const ADMIN = getNextConfig().publicRuntimeConfig.adminMnemonic
+const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 
 const contract = new Contract("0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A", Interep.abi)
 const provider = new providers.JsonRpcProvider("https://ropsten.infura.io/v3/4cdff1dcd508417a912e1713d3750f24")
-const adminWallet = Wallet.fromMnemonic(ADMIN).connect(provider)
-
-const groupId = "1" // utils.formatBytes32String("brightid")
+const adminWallet = new Wallet(ADMIN, provider)
+const adminAddress = adminWallet.getAddress()
+const groupId = "333"//utils.formatBytes32String("brightid")
 
 type ReturnParameters = {
     signMessage: (signer: Signer, message: string) => Promise<string | null>
