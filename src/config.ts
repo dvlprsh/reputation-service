@@ -26,7 +26,8 @@ export enum ContractName {
 export enum SupportedChainId {
     LOCALHOST = 31337,
     KOVAN = 42,
-    ARBITRUM = 42161
+    ARBITRUM = 42161,
+    ROPSTEN = 3
 }
 
 export const contractAddresses: Record<number, Record<ContractName, any>> = {
@@ -38,6 +39,9 @@ export const contractAddresses: Record<number, Record<ContractName, any>> = {
     },
     [SupportedChainId.ARBITRUM]: {
         [ContractName.INTEREP]: "0xa2A7f256B4Ea653eef95965D09bbdBb4b4526419"
+    },
+    [SupportedChainId.ROPSTEN]: {
+        [ContractName.INTEREP]: "0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A"
     }
 }
 
@@ -53,6 +57,10 @@ export const supportedNetworks: Record<string, NetworkData> = {
     arbitrum: {
         name: "arbitrum",
         chainId: SupportedChainId.ARBITRUM
+    },
+    ropsten: {
+        name: "ropsten",
+        chainId: SupportedChainId.ROPSTEN
     }
 }
 
@@ -100,6 +108,7 @@ export default {
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     JWT_SIGNING_PRIVATE_KEY: process.env.JWT_SIGNING_PRIVATE_KEY,
     JWT_SECRET: process.env.JWT_SECRET,
+
     MERKLE_TREE_DEPTH: Number(process.env.MERKLE_TREE_DEPTH) || defaultEnv.MERKLE_TREE_DEPTH,
     API_WHITELIST: defaultEnv.API_WHITELIST
 }
