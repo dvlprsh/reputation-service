@@ -47,6 +47,7 @@
         "@web3-react/core": "^6.1.9",
         "@web3-react/injected-connector": "^6.0.7",
         "@zk-kit/incremental-merkle-tree": "^0.4.2",
+        "@zk-kit/protocols": "^1.11.0",
         "botometer": "^1.0.12",
         "circomlibjs": "^0.0.8",
         "cors": "^2.8.5",

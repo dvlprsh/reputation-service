@@ -4,12 +4,14 @@ import createIdentity from "@interep/identity"
 import { useToast } from "@chakra-ui/react"
 import Interep from "contract-artifacts/Interep.json"
 import getNextConfig from "next/config"
+import {generateMerkleProof} from "@zk-kit/protocols"
 
 const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 
 const contract = new Contract("0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A", Interep.abi)
 const provider = new providers.JsonRpcProvider("https://ropsten.infura.io/v3/4cdff1dcd508417a912e1713d3750f24")
 const adminWallet = new Wallet(ADMIN, provider)
+//const adminWallet = Wallet.fromMnemonic(ADMIN).connect(provider)
 const adminAddress = adminWallet.getAddress()
 const groupId = "333"//utils.formatBytes32String("brightid")
 
@@ -17,7 +19,7 @@ type ReturnParameters = {
     signMessage: (signer: Signer, message: string) => Promise<string | null>
     retrieveIdentityCommitment: (signer: Signer) => Promise<string | null>
     joinGroup: (identityCommitment: string) => Promise<true | null>
-    // leaveGroup: (identityCommitment: string, groupName: string, body: any) => Promise<true | null>
+    leaveGroup: (identityCommitment: string, groupName: string, body: any) => Promise<true | null>
     _loading: boolean
 }
 
@@ -97,13 +99,32 @@ export default function useOnChainGroups(): ReturnParameters {
     )
 
 
-    // const leaveGroup = useCallback(() => {}, [])
+    const leaveGroup = useCallback(
+        async (IdentityCommitment: string): Promise<true | null> => {
+            setLoading(true)
+            const members: bigint[] = [BigInt(4501569721672538442370140969138769520049710069898761697393618852772937797708)]
+            const merkleproof = generateMerkleProof(20, BigInt(0), members, IdentityCommitment)
+
+            console.log("\n---leaf----\n"+merkleproof.leaf+"\n----pathindices---\n"+merkleproof.pathIndices+"\n---root----\n"+merkleproof.root+"\n----siblings---\n"+merkleproof.siblings)
+            await contract.connect(adminWallet).removeMember(groupId, IdentityCommitment, merkleproof.siblings ,merkleproof.pathIndices, {gasLimit: 3000000})
+
+            setLoading(false)
+            toast({
+                description: `You out`,
+                variant:"subtle",
+                isClosable: true
+            })
+            return true
+        },
+        []
+        
+    )
 
     return {
         retrieveIdentityCommitment,
         signMessage,
         joinGroup,
-        // leaveGroup,
+        leaveGroup,
         _loading
     }
 }
