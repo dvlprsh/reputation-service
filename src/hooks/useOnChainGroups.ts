@@ -4,22 +4,28 @@ import createIdentity from "@interep/identity"
 import { useToast } from "@chakra-ui/react"
 import Interep from "contract-artifacts/Interep.json"
 import getNextConfig from "next/config"
-import {generateMerkleProof} from "@zk-kit/protocols"
+// import { generateMerkleProof } from "@zk-kit/protocols"
 
-const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 
 const contract = new Contract("0xC36B2b846c53a351d2Eb5Ac77848A3dCc12ef22A", Interep.abi)
 const provider = new providers.JsonRpcProvider("https://ropsten.infura.io/v3/4cdff1dcd508417a912e1713d3750f24")
+
+// const ADMIN = getNextConfig().publicRuntimeConfig.adminMnemonic
+// const adminWallet = Wallet.fromMnemonic(ADMIN).connect(provider)
+// // Mnemonic
+
+const ADMIN = getNextConfig().publicRuntimeConfig.adminprivatekey
 const adminWallet = new Wallet(ADMIN, provider)
-//const adminWallet = Wallet.fromMnemonic(ADMIN).connect(provider)
-const adminAddress = adminWallet.getAddress()
-const groupId = "333"//utils.formatBytes32String("brightid")
+// Privatekey
+
+// const adminAddress = adminWallet.getAddress()
+const groupId = "2"// utils.formatBytes32String("brightid")
 
 type ReturnParameters = {
     signMessage: (signer: Signer, message: string) => Promise<string | null>
     retrieveIdentityCommitment: (signer: Signer) => Promise<string | null>
     joinGroup: (identityCommitment: string) => Promise<true | null>
-    leaveGroup: (identityCommitment: string, groupName: string, body: any) => Promise<true | null>
+    leaveGroup: (identityCommitment: string, members: string[]) => Promise<true | null>
     _loading: boolean
 }
 
@@ -100,9 +106,8 @@ export default function useOnChainGroups(): ReturnParameters {
 
 
     const leaveGroup = useCallback(
-        async (IdentityCommitment: string): Promise<true | null> => {
+        async (IdentityCommitment: string, members:bigint[]): Promise<true | null> => {
             setLoading(true)
-            const members: bigint[] = [BigInt(4501569721672538442370140969138769520049710069898761697393618852772937797708)]
             const merkleproof = generateMerkleProof(20, BigInt(0), members, IdentityCommitment)
 
             console.log("\n---leaf----\n"+merkleproof.leaf+"\n----pathindices---\n"+merkleproof.pathIndices+"\n---root----\n"+merkleproof.root+"\n----siblings---\n"+merkleproof.siblings)
@@ -116,8 +121,7 @@ export default function useOnChainGroups(): ReturnParameters {
             })
             return true
         },
-        []
-        
+        [toast]
     )
 
     return {

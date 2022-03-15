@@ -10,6 +10,13 @@ import useOnChainGroups from "src/hooks/useOnChainGroups"
 const NODE_URL = "http:%2f%2fnode.brightid.org"
 const CONTEXT = "interep"
 
+interface memberData {
+    identityCommitment: string;
+}
+interface subgraphData {
+    id: string,
+    memebers: memberData[]
+}
 export default function BrightIdPage(): JSX.Element {
     const { account, library } = useWeb3React<providers.Web3Provider>()
     const [_identityCommitment, setIdentityCommitment] = useState<string>()
@@ -40,6 +47,26 @@ export default function BrightIdPage(): JSX.Element {
         return brightIdUser.data?.unique
     }, [])
 
+    const getGroupData = async () => {
+        const endPoint = "https://api.thegraph.com/subgraphs/name/jdhyun09/mysubgraphinterep"
+        const query = "{onchainGroups(first: 5) {id,members{identityCommitment}}}"
+        const response = await fetch(endPoint, {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({query})
+        })
+        return response.json()
+    }
+
+    const printMembers = useCallback(async () => { // params: groupId
+        const queryData = await getGroupData()
+        const groupMembers = queryData.data.onchainGroups.filter( (v: subgraphData) => v.id === "2") // v.id === groupId
+        const identityCommitmentsList = groupMembers[0].members.map( (v:memberData) => BigInt(v.identityCommitment))
+        console.log(identityCommitmentsList)
+        return identityCommitmentsList
+    },[])
+
+
     useEffect(() => {
         ;(async () => {
             if (account && library) {
@@ -49,10 +76,11 @@ export default function BrightIdPage(): JSX.Element {
                 if (userVerified && _currentStep === 0) {
                     setVerified(userVerified)
                     setCurrentStep(1)
+                    printMembers()
                 }
             }
         })()
-    }, [account, library, _currentStep, isUserVerified])
+    }, [account, library, _currentStep, isUserVerified, printMembers])
 
     const step1 = useCallback(
         async (signer: Signer) => {
